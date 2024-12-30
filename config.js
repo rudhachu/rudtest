@@ -11,7 +11,7 @@ function convertToBool(text, fault = 'true') {
 
 // Function to convert string to boolean
 const toBool = (x) => (x && x.toLowerCase() === 'true') || false;
-global.apiUrl = 'https://api.maskser.me/'
+global.apiUrl = 'https://rudhra-web-server.onrender.com/'
 global.eypzApi = 'https://api.kps.c0m.in/'
 
 // Define the Sequelize instance based on DATABASE_URL
