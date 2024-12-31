@@ -135,10 +135,10 @@ rudhra({
         const firstVideo = videos[0];
         const videoUrl = firstVideo.url;
 
-        const response = await axios.get(`https://api.tioprm.eu.org/download/ytdl?url=${videoUrl}`);
-        const { result, title } = response.data;
-        const mp3 = result.mp3;
-        await message.reply(`_Downloading ${result.title}_`);
+        const response = await axios.get(rudhraWebUrl + `api/ytmp4?url=${encodeURIComponent(videoUrl)}`);
+        const { url, title } = response.data;
+        const mp3 = url;
+        await message.reply(`_Downloading ${title}_`);
         await message.client.sendMessage(
             message.jid,
             { audio: { url: mp3 }, mimetype: 'audio/mp4' },
@@ -146,7 +146,7 @@ rudhra({
           );
           await message.client.sendMessage(
             message.jid,
-            { document: { url: mp3 }, mimetype: 'audio/mpeg', fileName: `${result.title}.mp3`, caption: `_${result.title}_` },
+            { document: { url: mp3 }, mimetype: 'audio/mpeg', fileName: `${title}.mp3`, caption: `_${title}_` },
             { quoted: message.data }
           );
     } catch (error) {
@@ -175,13 +175,13 @@ rudhra({
         const firstVideo = videos[0];
         const videoUrl = firstVideo.url;
 
-        const response = await axios.get(`https://api.tioprm.eu.org/download/ytdl?url=${videoUrl}`);
-        const { result, title } = response.data;
-        const mp4 = result.mp4;
-        await message.reply(`_Downloading ${result.title}_`);
+        const response = await axios.get(rudhraWebUrl + `api/ytmp4?url=${encodeURIComponent(videoUrl)}`);
+        const { url, title } = response.data;
+        const mp4 = url;
+        await message.reply(`_Downloading ${title}_`);
         await message.client.sendMessage(
             message.jid,
-            { video: { url: mp4 }, mimetype: 'video/mp4', fileName: `${result.title}.mp4` },
+            { video: { url: mp4 }, mimetype: 'video/mp4', fileName: `${title}.mp4` },
             { quoted: message.data }
         );
     } catch (error) {
@@ -202,10 +202,10 @@ rudhra({
 
     const videoUrl = match;
     try {
-        const response = await axios.get(`https://api.tioprm.eu.org/download/ytdl?url=${videoUrl}`);
-        const { result, title } = response.data;
-        const mp3 = result.mp3;
-        await message.reply(`_Downloading ${result.title}_`);
+        const response = await axios.get(rudhraWebUrl + `api/ytmp4?url=${encodeURIComponent(videoUrl)}`);
+        const { url, title } = response.data;
+        const mp3 = url;
+        await message.reply(`_Downloading ${title}_`);
         await message.client.sendMessage(
             message.jid,
             { audio: { url: mp3 }, mimetype: 'audio/mp4' },
@@ -213,7 +213,7 @@ rudhra({
           );
           await message.client.sendMessage(
             message.jid,
-            { document: { url: mp3 }, mimetype: 'audio/mpeg', fileName: `${result.title}.mp3`, caption: `_${result.title}_` },
+            { document: { url: mp3 }, mimetype: 'audio/mpeg', fileName: `${title}.mp3`, caption: `_${title}_` },
             { quoted: message.data }
           );
     } catch (error) {
@@ -234,13 +234,13 @@ rudhra({
 
     const videoUrl = match;
     try {
-        const response = await axios.get(`https://api.tioprm.eu.org/download/ytdl?url=${videoUrl}`);
-        const { result, title } = response.data;
-        const mp4 = result.mp4;
-        await message.reply(`_Downloading ${result.title}_`);
+        const response = await axios.get(rudhraWebUrl + `api/ytmp4?url=${encodeURIComponent(videoUrl)}`);
+        const { url, title } = response.data;
+        const mp4 = url;
+        await message.reply(`_Downloading ${title}_`);
         await message.client.sendMessage(
             message.jid,
-            { video: { url: mp4 }, mimetype: 'video/mp4', fileName: `${result.title}.mp4` },
+            { video: { url: mp4 }, mimetype: 'video/mp4', fileName: `${title}.mp4` },
             { quoted: message.data }
         );
     } catch (error) {
@@ -277,7 +277,7 @@ rudhra({
         }
     }
 
-    const apiUrl = `https://api.tioprm.eu.org/download/ytdl?url=${videoUrl}`;
+    const apiUrl = rudhraWebUrl + `api/ytmp4?url=${encodeURIComponent(videoUrl)}`;
     try {
         const response = await fetch(apiUrl);
         const data = await response.json();
@@ -328,7 +328,7 @@ rudhra({
                     await client.sendMessage(
                         message.jid,
                         {
-                            audio: { url: data.result.mp3 },
+                            audio: { url: data.url },
                             mimetype: 'audio/mpeg',
                             fileName: `rudhra-bot.mp3`,
                             contextInfo: { externalAdReply: externalAdReply }
@@ -340,7 +340,7 @@ rudhra({
                     await client.sendMessage(
                         message.jid,
                         {
-                            video: { url: data.result.mp4 },
+                            video: { url: data.url },
                             mimetype: 'video/mp4',
                             caption: `*Title:* ${data.title}\n*Duration:* ${data.duration} seconds`
                         },
