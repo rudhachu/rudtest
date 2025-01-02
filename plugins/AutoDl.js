@@ -1,3 +1,4 @@
+/*
 const {
     rudhra,
     mode,
@@ -167,3 +168,4 @@ const isYtUrl = (text) => {
         await message.reply('Failed to download audio. Please try again later.');
     }
 };
+*/
