@@ -78,7 +78,7 @@ const isYtUrl = (text) => {
         console.error('Error fetching or sending media:', error);
         await message.reply('_Error fetching media!. Please try again later!_');
     }
-});
+};
   
   
   const downloadFacebookMedia = async (message, match) => {
