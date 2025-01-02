@@ -5,7 +5,7 @@ const {
     getUrl,
     isUrl,
     toAudio,
-    getJson,
+    getJson
   } = require("../lib");
   const fetch = require("node-fetch");
   const axios = require("axios");
