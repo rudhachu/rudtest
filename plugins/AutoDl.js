@@ -5,7 +5,7 @@ const config = require("../config");
 
 // Event listener for text messages
 rudhra(
-  { on: "text", fromMe: mode, dontAddCommandList: true },
+  { on: "text", fromMe: false, dontAddCommandList: true },
   async (message, match, client) => {
     if (!match || !match.startsWith) return;  // Check if match is valid
 
