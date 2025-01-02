@@ -146,7 +146,7 @@ const isYtUrl = (text) => {
         console.error(error);
         await client.sendMessage(message.jid, { text: "An error occurred while fetching the media. Please try again later." });
     }
-});
+};
 
   const downloadYoutubeMedia = async (message, match) => {
     try {
@@ -166,4 +166,4 @@ const isYtUrl = (text) => {
         console.error('Error fetching audio:', error);
         await message.reply('Failed to download audio. Please try again later.');
     }
-});
+};
