@@ -226,22 +226,30 @@ rudhra({
     desc: "Search and download YouTube video/audio.",
     type: "downloader"
 }, async (message, match, client) => {
-    if (!match) return await message.reply("Please provide a search term!");
+    try {
+        if (!match) {
+            return await message.reply("Please provide a search term!");
+        }
 
-    const result = await yts(match);
-    if (!result.videos.length) return await message.reply("No results found!");
+        // Search YouTube videos
+        const result = await yts(match);
+        if (!result.videos.length) {
+            return await message.reply("No results found!");
+        }
 
-    const playUrl = result.videos[0].url;
-    const title = result.videos[0].title;
-    const duration = result.videos[0].duration;
-    const thumbnail = result.videos[0].thumbnail;
-    const ytApi = `https://api.siputzx.my.id/api/d/ytmp4?url=${playUrl}`;
-    const res = await fetch(ytApi);
-    const ytplay = await res.json();
+        const video = result.videos[0];
+        const { url: playUrl, title, duration, thumbnail } = video;
 
-    if (!ytplay || !ytplay.data) return await message.reply("Failed to fetch download links!");
+        // Fetch download links
+        const ytApi = `https://api.siputzx.my.id/api/d/ytmp4?url=${playUrl}`;
+        const res = await fetch(ytApi);
+        const ytplay = await res.json();
 
-    const mp4 = ytplay.data.dl;
+        if (!ytplay || !ytplay.data) {
+            return await message.reply("Failed to fetch download links!");
+        }
+
+        const mp4 = ytplay.data.dl;
 
         // Display download options to the user
         const optionsText = `*_${title}_*\n\n *1.* *Video*\n *2.* *Audio*\n *3.* *Document*\n\n*ʀᴇᴘʟʏ ᴡɪᴛʜ ᴀ ɴᴜᴍʙᴇʀ ᴛᴏ ᴅᴏᴡɴʟᴏᴀᴅ*`;
@@ -264,7 +272,7 @@ rudhra({
 
         const sentMsg = await client.sendMessage(message.jid, contextInfoMessage, { quoted: message.data });
 
-        // Listen for user response (1 for video, 2 for audio, 3 for document)
+        // Listen for user response
         client.ev.on('messages.upsert', async (msg) => {
             const newMessage = msg.messages[0];
 
@@ -281,46 +289,47 @@ rudhra({
                         {
                             video: { url: mp4 },
                             mimetype: 'video/mp4',
-                            caption: `*Title:* ${title}\n*Duration:* ${data.duration} seconds`
+                            caption: `*Title:* ${title}\n*Duration:* ${duration} seconds`
                         },
                         { quoted: message.data }
                     );
                 } else if (userReply === '2') {
                     // Send audio file
-                    const externalAdReply = {
-                        title: title,
-                        body: "ʀᴜᴅʜʀᴀ ʙᴏᴛ",
-                        sourceUrl: playUrl,
-                        mediaUrl: playUrl,
-                        mediaType: 1,
-                        showAdAttribution: true,
-                        renderLargerThumbnail: false,
-                        thumbnailUrl: thumbnail
-                    };
                     await client.sendMessage(
                         message.jid,
                         {
                             audio: { url: mp4 },
                             mimetype: 'audio/mpeg',
                             fileName: `rudhra-bot.mp3`,
-                            contextInfo: { externalAdReply: externalAdReply }
+                            contextInfo: {
+                                externalAdReply: {
+                                    title: title,
+                                    body: "ʀᴜᴅʜʀᴀ ʙᴏᴛ",
+                                    sourceUrl: playUrl,
+                                    mediaUrl: playUrl,
+                                    mediaType: 1,
+                                    showAdAttribution: true,
+                                    renderLargerThumbnail: false,
+                                    thumbnailUrl: thumbnail
+                                }
+                            }
                         },
                         { quoted: message.data }
                     );
                 } else if (userReply === '3') {
-                // Send document
-                await client.sendMessage(
-                    message.jid,
-                    {
-                        document: { url: mp4 },
-                        mimetype: 'audio/mpeg',
-                        fileName: `${title}.mp3`,
-                        caption: `_${title}_`
-                    },
-                    { quoted: message.data }
-                );
+                    // Send document file
+                    await client.sendMessage(
+                        message.jid,
+                        {
+                            document: { url: mp4 },
+                            mimetype: 'audio/mpeg',
+                            fileName: `${title}.mp3`,
+                            caption: `_${title}_`
+                        },
+                        { quoted: message.data }
+                    );
                 } else {
-                    await client.sendMessage(message.jid, { text: "Invalid option. Please reply with 1 or 2." });
+                    await client.sendMessage(message.jid, { text: "Invalid option. Please reply with 1, 2, or 3." });
                 }
             }
         });
