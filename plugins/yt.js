@@ -1,21 +1,6 @@
-const {
-  rudhra,
-  mode,
-  isUrl,
-  getJson,
-  PREFIX,
-  AddMp3Meta,
-  getBuffer,
-  toAudio,
-  yta,
-  ytv,
-  ytsdl,
-  parsedUrl
-} = require("../lib");
-const axios = require('axios');
-const fetch = require('node-fetch');
-const config = require('../config');
+const { rudhra, mode } = require("../lib");
 const yts = require("yt-search");
+const fetch = require("node-fetch");
 
 rudhra({
     pattern: 'ytd ?(.*)',
@@ -28,9 +13,12 @@ rudhra({
     if (!isUrl(userInput)) return await message.reply("Invalid YouTube link. Please provide a valid one.");
 
     const videoUrl = userInput.trim();
-    const response = await axios.get(rudhraWebUrl + `api/ytmp4?url=${encodeURIComponent(videoUrl)}`);
-    const { url, title } = response.data;
-    const mp4 = url;
+    const ytApi = `https://api.siputzx.my.id/api/d/ytmp4?url=${videoUrl}`;
+    const response = await fetch(ytApi);
+    const result = await response.json();
+    const data = result.data;
+    const mp4 = data.dl;
+    const title = data.title;
     const optionsText = `*${title}*\n\n *1.* *Video*\n *2.* *Audio*\n *3.* *Document*\n\n*ʀᴇᴘʟʏ ᴡɪᴛʜ ᴀ ɴᴜᴍʙᴇʀ ᴛᴏ ᴅᴏᴡɴʟᴏᴀᴅ*`;
     const contextInfoMessage = {
         text: optionsText,
@@ -93,96 +81,27 @@ rudhra({
 });
 
 rudhra({
-    pattern: 'song ?(.*)',
-    fromMe: mode,
-    desc: 'Search and download audio from YouTube.',
-    type: 'info'
+  pattern: "song ?(.*)",
+  fromMe: mode,
+  desc: "Search and download audio from YouTube.",
+  type: "downloader",
 }, async (message, match, client) => {
-    match = match || message.reply_message.text;
-    if (!match) {
-        return await message.reply('Please provide a search query.');
-    }
+  if (!match) {
+    return await message.reply("Please provide a search query or YouTube URL.");
+  }
 
-    const query = match;
-    try {
-        const { videos } = await yts(query);
-        if (videos.length === 0) {
-            return await message.reply('No results found.');
-        }
+  try {
+    const { videos } = await yts(match);
+    const firstVideo = videos[0];
+    const url = firstVideo.url;
+    const ytApi = `https://api.siputzx.my.id/api/d/ytmp4?url=${url}`;
 
-        const firstVideo = videos[0];
-        const videoUrl = firstVideo.url;
+    const response = await fetch(ytApi);
+    const result = await response.json();
+    const data = result.data;
+    const mp3 = data.dl;
+    const title = data.title;
 
-        const response = await axios.get(rudhraWebUrl + `api/ytmp4?url=${encodeURIComponent(videoUrl)}`);
-        const { url, title } = response.data;
-        const mp3 = url;
-        await message.reply(`_Downloading ${title}_`);
-        await message.client.sendMessage(
-            message.jid,
-            { audio: { url: mp3 }, mimetype: 'audio/mp4' },
-            { quoted: message.data }
-          );
-          await message.client.sendMessage(
-            message.jid,
-            { document: { url: mp3 }, mimetype: 'audio/mpeg', fileName: `${title}.mp3`, caption: `_${title}_` },
-            { quoted: message.data }
-          );
-    } catch (error) {
-        console.error('Error fetching audio:', error);
-        await message.reply('Failed to download audio. Please try again later.');
-    }
-});
-rudhra({
-    pattern: 'video?(.*)',
-    fromMe: mode,
-    desc: 'Search and download video from YouTube.',
-    type: 'info'
-}, async (message, match, client) => {
-    match = match || message.reply_message.text;
-    if (!match) {
-        return await message.reply('Please provide a search query.');
-    }
-
-    const query = match;
-    try {
-        const { videos } = await yts(query);
-        if (videos.length === 0) {
-            return await message.reply('No results found.');
-        }
-
-        const firstVideo = videos[0];
-        const videoUrl = firstVideo.url;
-
-        const response = await axios.get(rudhraWebUrl + `api/ytmp4?url=${encodeURIComponent(videoUrl)}`);
-        const { url, title } = response.data;
-        const mp4 = url;
-        await message.reply(`_Downloading ${title}_`);
-        await message.client.sendMessage(
-            message.jid,
-            { video: { url: mp4 }, mimetype: 'video/mp4', fileName: `${title}.mp4` },
-            { quoted: message.data }
-        );
-    } catch (error) {
-        console.error('Error fetching video:', error);
-        await message.reply('Failed to download video. Please try again later.');
-    }
-});
-
-rudhra({
-    pattern: 'yta ?(.*)',
-    fromMe: mode,
-    desc: 'Download audio from YouTube.',
-    type: 'info'
-}, async (message, match, client) => {
-    match = match || message.reply_message.text;
-    if (!match) return await message.reply("Give me a YouTube link");
-    if (!isUrl(match)) return await message.reply("Give me a YouTube link");
-
-    const videoUrl = match;
-    try {
-        const response = await axios.get(rudhraWebUrl + `api/ytmp4?url=${encodeURIComponent(videoUrl)}`);
-        const { url, title } = response.data;
-        const mp3 = url;
         await message.reply(`_Downloading ${title}_`);
         await message.client.sendMessage(
             message.jid,
@@ -201,20 +120,27 @@ rudhra({
 });
 
 rudhra({
-    pattern: 'ytv ?(.*)',
-    fromMe: mode,
-    desc: 'Download video from YouTube.',
-    type: 'info'
+  pattern: "video ?(.*)",
+  fromMe: mode,
+  desc: "Search and download video from YouTube.",
+  type: "downloader",
 }, async (message, match, client) => {
-    match = match || message.reply_message.text;
-    if (!match) return await message.reply("Give me a YouTube link");
-    if (!isUrl(match)) return await message.reply("Give me a YouTube link");
+  if (!match) {
+    return await message.reply("Please provide a search query or YouTube URL.");
+  }
 
-    const videoUrl = match;
-    try {
-        const response = await axios.get(rudhraWebUrl + `api/ytmp4?url=${encodeURIComponent(videoUrl)}`);
-        const { url, title } = response.data;
-        const mp4 = url;
+  try {
+    const { videos } = await yts(match);
+    const firstVideo = videos[0];
+    const url = firstVideo.url;
+    const ytApi = `https://api.siputzx.my.id/api/d/ytmp4?url=${url}`;
+
+    const response = await fetch(ytApi);
+    const result = await response.json();
+    const data = result.data;
+    const mp4 = data.dl;
+    const title = data.title;
+
         await message.reply(`_Downloading ${title}_`);
         await message.client.sendMessage(
             message.jid,
@@ -228,53 +154,110 @@ rudhra({
 });
 
 rudhra({
-    pattern: 'play ?(.*)',
-    fromMe: mode,
-    desc: 'Search and download audio or video from YouTube',
-    type: 'media'
+  pattern: "yta ?(.*)",
+  fromMe: mode,
+  desc: "Download audio from YouTube.",
+  type: "downloader",
 }, async (message, match, client) => {
-    if (!match) {
-        await client.sendMessage(message.jid, { text: "Please provide a YouTube URL or search query after the command. Example: .play <search query>" });
-        return;
+  match = match || message.reply_message.text;
+  if (!match) {
+    return await message.reply("Please provide a YouTube URL.");
+  }
+
+  try {
+    const ytApi = `https://api.siputzx.my.id/api/d/ytmp4?url=${match}`;
+    const response = await fetch(ytApi);
+    const result = await response.json();
+    const data = result.data;
+    const mp3 = data.dl;
+    const title = data.title;
+
+        await message.reply(`_Downloading ${title}_`);
+        await message.client.sendMessage(
+            message.jid,
+            { audio: { url: mp3 }, mimetype: 'audio/mp4' },
+            { quoted: message.data }
+          );
+          await message.client.sendMessage(
+            message.jid,
+            { document: { url: mp3 }, mimetype: 'audio/mpeg', fileName: `${title}.mp3`, caption: `_${title}_` },
+            { quoted: message.data }
+          );
+    } catch (error) {
+        console.error('Error fetching audio:', error);
+        await message.reply('Failed to download audio. Please try again later.');
     }
+});
 
-    let videoUrl = match;
+rudhra({
+  pattern: "ytv ?(.*)",
+  fromMe: mode,
+  desc: "Download video from YouTube.",
+  type: "downloader",
+}, async (message, match, client) => {
+  match = match || message.reply_message.text;
+  if (!match) {
+    return await message.reply("Please provide a YouTube URL.");
+  }
 
-    // If the input isn't a URL, perform a YouTube search
-    if (!match.startsWith('http')) {
-        try {
-            const results = await yts(match);
-            if (!results || results.videos.length === 0) {
-                await client.sendMessage(message.jid, { text: "No results found for your search." });
-                return;
-            }
-            videoUrl = results.videos[0].url;
-        } catch (error) {
-            await client.sendMessage(message.jid, { text: "Error occurred while searching. Please try again." });
-            return;
-        }
+  try {
+    const ytApi = `https://api.siputzx.my.id/api/d/ytmp4?url=${match}`;
+    const response = await fetch(ytApi);
+    const result = await response.json();
+    const data = result.data;
+    const mp4 = data.dl;
+    const title = data.title;
+
+        await message.reply(`_Downloading ${title}_`);
+        await message.client.sendMessage(
+            message.jid,
+            { video: { url: mp4 }, mimetype: 'video/mp4', fileName: `${title}.mp4` },
+            { quoted: message.data }
+        );
+    } catch (error) {
+        console.error('Error fetching video:', error);
+        await message.reply('Failed to download video. Please try again later.');
     }
+});
 
-    const apiUrl = rudhraWebUrl + `api/ytmp4?url=${encodeURIComponent(videoUrl)}`;
-    try {
-        const response = await fetch(apiUrl);
-        const data = await response.json();
+rudhra({
+    pattern: "play ?(.*)",
+    fromMe: mode,
+    desc: "Search and download YouTube video/audio.",
+    type: "downloader"
+}, async (message, match, client) => {
+    if (!match) return await message.reply("Please provide a search term!");
+
+    const result = await yts(match);
+    if (!result.videos.length) return await message.reply("No results found!");
+
+    const playUrl = result.videos[0].url;
+    const title = result.videos[0].title;
+    const duration = result.videos[0].duration;
+    const thumbnail = result.videos[0].thumbnail;
+    const ytApi = `https://api.siputzx.my.id/api/d/ytmp4?url=${playUrl}`;
+    const res = await fetch(ytApi);
+    const ytplay = await res.json();
+
+    if (!ytplay || !ytplay.data) return await message.reply("Failed to fetch download links!");
+
+    const mp4 = ytplay.data.dl;
 
         // Display download options to the user
-        const optionsText = `*_${data.title}_*\n\n *1.* *Video*\n *2.* *Audio*\n *3.* *Document*\n\n*ʀᴇᴘʟʏ ᴡɪᴛʜ ᴀ ɴᴜᴍʙᴇʀ ᴛᴏ ᴅᴏᴡɴʟᴏᴀᴅ*`;
+        const optionsText = `*_${title}_*\n\n *1.* *Video*\n *2.* *Audio*\n *3.* *Document*\n\n*ʀᴇᴘʟʏ ᴡɪᴛʜ ᴀ ɴᴜᴍʙᴇʀ ᴛᴏ ᴅᴏᴡɴʟᴏᴀᴅ*`;
         const contextInfoMessage = {
             text: optionsText,
             contextInfo: {
                 mentionedJid: [message.sender],
                 externalAdReply: {
-                    title: data.title,
+                    title: title,
                     body: "ʀᴜᴅʜʀᴀ ʙᴏᴛ",
-                    sourceUrl: data.source_url,
-                    mediaUrl: data.source_url,
+                    sourceUrl: playUrl,
+                    mediaUrl: playUrl,
                     mediaType: 1,
                     showAdAttribution: true,
                     renderLargerThumbnail: false,
-                    thumbnailUrl: data.thumbnail
+                    thumbnailUrl: thumbnail
                 }
             }
         };
@@ -296,28 +279,28 @@ rudhra({
                     await client.sendMessage(
                         message.jid,
                         {
-                            video: { url: data.url },
+                            video: { url: mp4 },
                             mimetype: 'video/mp4',
-                            caption: `*Title:* ${data.title}\n*Duration:* ${data.duration} seconds`
+                            caption: `*Title:* ${title}\n*Duration:* ${data.duration} seconds`
                         },
                         { quoted: message.data }
                     );
                 } else if (userReply === '2') {
                     // Send audio file
                     const externalAdReply = {
-                        title: data.title,
+                        title: title,
                         body: "ʀᴜᴅʜʀᴀ ʙᴏᴛ",
-                        sourceUrl: data.source_url,
-                        mediaUrl: data.source_url,
+                        sourceUrl: playUrl,
+                        mediaUrl: playUrl,
                         mediaType: 1,
                         showAdAttribution: true,
                         renderLargerThumbnail: false,
-                        thumbnailUrl: data.thumbnail
+                        thumbnailUrl: thumbnail
                     };
                     await client.sendMessage(
                         message.jid,
                         {
-                            audio: { url: data.url },
+                            audio: { url: mp4 },
                             mimetype: 'audio/mpeg',
                             fileName: `rudhra-bot.mp3`,
                             contextInfo: { externalAdReply: externalAdReply }
@@ -329,10 +312,10 @@ rudhra({
                 await client.sendMessage(
                     message.jid,
                     {
-                        document: { url: data.url },
+                        document: { url: mp4 },
                         mimetype: 'audio/mpeg',
-                        fileName: `${data.title}.mp3`,
-                        caption: `_${data.title}_`
+                        fileName: `${title}.mp3`,
+                        caption: `_${title}_`
                     },
                     { quoted: message.data }
                 );
